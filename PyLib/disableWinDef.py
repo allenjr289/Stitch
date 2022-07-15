@@ -7,8 +7,7 @@ import subprocess
 def windefnd_scan():
     defender = reg_exists('SOFTWARE\\Microsoft\\Windows Defender')
     if not defender: defender = reg_exists('SOFTWARE\\Policies\\Microsoft\\Windows Defender')
-    if not defender: return False
-    else: return True
+    return bool(defender)
 
 def windefnd_running():
     key = False
@@ -19,13 +18,10 @@ def windefnd_running():
     if key:
         try:
             val=_winreg.QueryValueEx(key, "DisableAntiSpyware")
-            if val[0] == 1:
-                return False
-            else:
-                return True
+            return val[0] != 1
         except:
             return False
-    print "BROKEEEEEEN"
+    key = False
 
 def disable_windef():
     if reg_exists('SOFTWARE\\Policies\\Microsoft\\Windows Defender'):

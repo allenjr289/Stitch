@@ -25,10 +25,7 @@ def run_command(command):
         print "Terminated command."
 
 def no_error(cmd_output):
-    if cmd_output.startswith("ERROR:") or cmd_output.startswith("[!]"):
-        return False
-    else:
-        return True
+    return not cmd_output.startswith("ERROR:") and not cmd_output.startswith("[!]")
 
 #TODO write cross platform install commands
 def gen_st_setup(alias,mkself_tmp):
@@ -201,12 +198,13 @@ def gen_makeself(conf_dir,alias):
     if not os.path.exists(mkself_tmp):
         os.makedirs(mkself_tmp)
     if sys.platform.startswith('darwin'):
-        alias_app = os.path.join(conf_dir,'{}.app'.format(alias))
+        alias_app = os.path.join(conf_dir, f'{alias}.app')
         if os.path.exists(alias_app):
-            run_command('cp -R {} {}'.format(alias_app,mkself_tmp))
+            run_command(f'cp -R {alias_app} {mkself_tmp}')
             gen_osx_plist(alias,mkself_tmp)
             gen_st_setup(alias,mkself_tmp)
-            mkself_installer = 'bash "{}" "{}" "{}/{}_Installer" "Stitch" bash st_setup.sh'.format(mkself_exe, mkself_tmp, conf_mkself,alias)
+            mkself_installer = f'bash "{mkself_exe}" "{mkself_tmp}" "{conf_mkself}/{alias}_Installer" "Stitch" bash st_setup.sh'
+
             st_log.info(mkself_installer)
             st_log.info(run_command(mkself_installer))
             shutil.rmtree(mkself_tmp)
@@ -214,10 +212,11 @@ def gen_makeself(conf_dir,alias):
         binry_dir = os.path.join(conf_dir,'Binaries')
         alias_dir = os.path.join(binry_dir, alias)
         if os.path.exists(alias_dir):
-            run_command('cp -R {} {}'.format(alias_dir,mkself_tmp))
+            run_command(f'cp -R {alias_dir} {mkself_tmp}')
             gen_lnx_daemon(alias,mkself_tmp)
             gen_st_setup(alias,mkself_tmp)
-            mkself_installer = 'bash "{}" "{}" "{}/{}_Installer" "Stitch" bash st_setup.sh'.format(mkself_exe, mkself_tmp, conf_mkself,alias)
+            mkself_installer = f'bash "{mkself_exe}" "{mkself_tmp}" "{conf_mkself}/{alias}_Installer" "Stitch" bash st_setup.sh'
+
             st_log.info(mkself_installer)
             st_log.info(run_command(mkself_installer))
             shutil.rmtree(mkself_tmp)

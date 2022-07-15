@@ -50,15 +50,14 @@ class st_osxshell(cmd.Cmd):
 
     def default(self, line):
         self.stlib.send(line)
-        st_log.info('Sending command: "{}"'.format(line))
+        st_log.info(f'Sending command: "{line}"')
         st_print(self.stlib.receive())
 
     def precmd(self, line):
         if self.stlib.is_alive(line):
             return cmd.Cmd.precmd(self, line)
-        else:
-            self.alive = False
-            return cmd.Cmd.precmd(self, 'exit')
+        self.alive = False
+        return cmd.Cmd.precmd(self, 'exit')
 
     def postcmd(self, stop, line):
         if not line.startswith(tuple(self.ignore)): self.get_path()

@@ -8,10 +8,7 @@ def av_scan(av):
         av_check = run_command('kextstat')
     elif lnx_client():
         av_check = run_command('lsmod')
-    for line in av_check:
-        if av in av_check:
-            return line
-    return False
+    return next((line for line in av_check if av in av_check), False)
 
 escan = av_scan('eScan')
 avira = av_scan('Avira')

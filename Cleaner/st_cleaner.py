@@ -22,15 +22,26 @@ nsis_path = {'chrome':'Google',
         'MSASTUIL' : 'WSEC',
         'WmiPrvSE' : 'WMIP'}
 
-for key in nsis_path:
-    inst_dir = "C:\\Windows\\SysWOW64\\"
-    pld_exe = '{}.exe'.format(key)
-    pld_nsis = nsis_path[key]
+inst_dir = "C:\\Windows\\SysWOW64\\"
+for key, pld_nsis in nsis_path.items():
+    pld_exe = f'{key}.exe'
     pld_path = os.path.join(inst_dir,pld_nsis)
     pld_exe_path = os.path.join(pld_path,pld_exe)
     if os.path.exists(pld_exe_path):
-        fw_pgm = subprocess.Popen(r'netsh advfirewall firewall delete rule name="{}" program="{}"'.format(key,pld_exe_path),shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        fw_pgm = subprocess.Popen(
+            f'netsh advfirewall firewall delete rule name="{key}" program="{pld_exe_path}"',
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
         fw_pgm_output, errors = fw_pgm.communicate()
-        tsk = subprocess.Popen(r'schtasks /delete /tn {}_ST /f'.format(key),shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        tsk = subprocess.Popen(
+            f'schtasks /delete /tn {key}_ST /f',
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
         tsk_output, errors = tsk.communicate()
         shutil.rmtree(pld_path)

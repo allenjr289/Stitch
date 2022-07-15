@@ -10,10 +10,7 @@ def disable_rdp():
 def check_rdp():
     rdp_key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Terminal Server')
     val=_winreg.QueryValueEx(rdp_key, "fDenyTSConnections")
-    if val[0] == 1:
-        return False
-    else:
-        return True
+    return val[0] != 1
 
 if check_rdp():
     disable_rdp()

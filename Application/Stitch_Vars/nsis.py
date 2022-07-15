@@ -91,13 +91,10 @@ def run_command(command):
         print "Terminated command."
 
 def no_error(cmd_output):
-    if cmd_output.startswith("ERROR:") or cmd_output.startswith("[!]"):
-        return False
-    else:
-        return True
+    return not cmd_output.startswith("ERROR:") and not cmd_output.startswith("[!]")
 
 def gen_nsis(conf_dir, name, outfile, path, elevation_path):
-    exe_name = '{}.exe'.format(name)
+    exe_name = f'{name}.exe'
     setup_nsi='''
 !include "LogicLib.nsh"
 !include "x64.nsh"
@@ -161,7 +158,10 @@ SectionEnd'''.format(nsis_Version[name],nsis_ProductName[name],nsis_CompanyName[
     shutil.copy(exe_path, insts_dir)
     shutil.copy(elevate, insts_dir)
 
-    nsis_payload = run_command('"C:\\Program Files (x86)\\NSIS\\makensis.exe" "{}"'.format(nsis_script))
+    nsis_payload = run_command(
+        f'"C:\\Program Files (x86)\\NSIS\\makensis.exe" "{nsis_script}"'
+    )
+
     if no_error(nsis_payload):
         instllr_path = os.path.join(conf_dir,outfile)
         nsis_instllr_path = os.path.join(installer_dir,outfile)
@@ -169,7 +169,7 @@ SectionEnd'''.format(nsis_Version[name],nsis_ProductName[name],nsis_CompanyName[
             os.rename(instllr_path,nsis_instllr_path)
         #st_print('[+] NSIS payload complete')
     else:
-        st_print('[!] Error creating NSIS payload with {} configuration'.format(exe_name))
+        st_print(f'[!] Error creating NSIS payload with {exe_name} configuration')
 
     os.remove(nsis_script)
     shutil.rmtree(insts_dir)

@@ -246,14 +246,12 @@ def scan_reg(antivirus):
     if not reg: reg = reg_exists('SOFTWARE\\Wow6432Node\\%s' % antivirus)
     if not reg: reg = reg_exists('SYSTEM\\CurrentControlSet\\Services\\%s AntiVirus' % antivirus)
     if not reg: reg = reg_exists('SOFTWARE\\Microsoft\\Security Center\\Monitoring\\%sAntiVirus' % antivirus)
-    if not reg: return False
-    else: return True
+    return bool(reg)
 
 def windefnd_scan():
     defender = reg_exists('SOFTWARE\\Microsoft\\Windows Defender')
     if not defender: defender = reg_exists('SOFTWARE\\Policies\\Microsoft\\Windows Defender')
-    if not defender: return False
-    else: return True
+    return bool(defender)
 
 def windefnd_running():
     key = False
@@ -278,9 +276,8 @@ process = process.split('\n')
 for proc in process:
     proc = proc.strip()
     name= proc.split(' ')[0]
-    if 'exe' in name:
-        if name in avs:
-            process_list.append(proc)
+    if 'exe' in name and name in avs:
+        process_list.append(proc)
 
 windefnd = windefnd_scan()
 escan = scan_reg('eScan')
@@ -317,7 +314,7 @@ if (not mcafee and not sophos and not ahnlab \
 send(client_socket,av_summary)
 av_summary = ''
 
-if len(process_list) > 0:
+if process_list:
     av_summary += 'Possible AVs, HIPS and/or Third Party firewalls:\n'
     av_summary += 'Image Name:\t\t    PID:\n'
     av_summary += '===========\t\t    ====\n'

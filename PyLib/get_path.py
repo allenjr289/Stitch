@@ -10,10 +10,7 @@ complete = os.listdir('.')
 c = ''
 for n in complete:
     if os.path.isdir(n):
-        if sys.platform.startswith('win'):
-            c += '%s%s' %(n,windir)
-        else:
-            c += '%s%s' %(n,posdir)
+        c += f'{n}{windir}' if sys.platform.startswith('win') else f'{n}{posdir}'
     else:
         c += '%s\n' %n
 send(client_socket, c)

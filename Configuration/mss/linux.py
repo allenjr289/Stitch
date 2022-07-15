@@ -188,8 +188,7 @@ class MSS(MSSBase):
             '''
 
             if value == 0:
-                err = 'xrandr.XRRGetScreenResources() failed.'
-                err += ' NULL pointer received.'
+                err = 'xrandr.XRRGetScreenResources() failed.' + ' NULL pointer received.'
                 raise ScreenshotError(err)
 
             return cast(value, POINTER(XRRScreenResources))

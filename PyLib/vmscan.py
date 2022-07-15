@@ -8,24 +8,22 @@ if win_client():
     process_list = process.split('\n')
 
     def enum_keys(reg):
-        if reg:
-            keys = []
-            try:
-                i = 0
-                while 1:
-                    name = _winreg.EnumKey(reg, i)
-                    keys.append(name)
-                    i += 1
-            except WindowsError as e:
-                return keys
-        else:
+        if not reg:
             return False
+        keys = []
+        try:
+            i = 0
+            while 1:
+                name = _winreg.EnumKey(reg, i)
+                keys.append(name)
+                i += 1
+        except WindowsError as e:
+            return keys
 
     def check_processes(exe,vm=False):
         global process_list
-        if exe in process_list:
-            if vm:
-                return ("VM Scan Complete: This is a %s Virtual Machine" % vm)
+        if exe in process_list and vm:
+            return f"VM Scan Complete: This is a {vm} Virtual Machine"
         return False
 
     def hyperv_scan(microsoft, services):
@@ -49,10 +47,14 @@ if win_client():
     def virtualpc_scan(services):
         #print "Scanning for VirtualPC..."
         virtpc_svc = ['vpcbus','vpc-s3','vpcuhub','msvmmouf']
-        for s in virtpc_svc:
-            if s in services :
-                return ("VM Scan Complete: This is a VirtualPC Virtual Machine.")
-        return False
+        return next(
+            (
+                "VM Scan Complete: This is a VirtualPC Virtual Machine."
+                for s in virtpc_svc
+                if s in services
+            ),
+            False,
+        )
 
     def sunvirtual_scan(services,luid,dsys,dsdtkey,fadtkey):
         #print "Scanning for Sun VirtualBox..."
@@ -75,12 +77,16 @@ if win_client():
     def xen_scan(services,dsdtkey,fadtkey,rsdtkey):
         #print "\nScanning for Xen..."
         virtpc_svc = ['xenevtchn','xennet','xennet6','xensvc','xenvdb']
-        for s in virtpc_svc:
-            if s in services :
-                return ("VM Scan Complete: This is a Xen Virtual Machine.")
-        if "Xen" in dsdtkey or "Xen" in fadtkey or "Xen" in rsdtkey:
-            return ("VM Scan Complete: This is a Xen Virtual Machine.")
-        return False
+        return next(
+            (
+                "VM Scan Complete: This is a Xen Virtual Machine."
+                for s in virtpc_svc
+                if s in services
+            ),
+            "VM Scan Complete: This is a Xen Virtual Machine."
+            if "Xen" in dsdtkey or "Xen" in fadtkey or "Xen" in rsdtkey
+            else False,
+        )
 
     def qemu_kvm_scan(luid,sycp):
         #print "Scanning for QEMU/KVM..."
@@ -95,18 +101,15 @@ if win_client():
         return False
 
     def find_luid():
-        i = 0
         n = 0
         luid = False
-        while i < 4:
+        for i in range(4):
             while n < 4:
                 try:
                     luid = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, 'HARDWARE\\DEVICEMAP\\Scsi\\Scsi Port %i\\Scsi Bus %i\\Target Id 0\\Logical Unit Id 0' % (i,n))
                     break
                 except Exception:
                     n += 1
-                    pass
-            i += 1
         return luid
 
     def try_openkey(path):
