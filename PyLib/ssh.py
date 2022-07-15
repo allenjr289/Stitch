@@ -14,7 +14,7 @@ def ssh_connect(host, user, password):
         s.login(host, user, password)
         return s, True
     except Exception as e:
-        return '[!] SSH Failure: {}'.format(str(e)), False
+        return f'[!] SSH Failure: {str(e)}', False
 
 ssh_user = receive(client_socket)
 ssh_hostname = receive(client_socket)
@@ -22,7 +22,7 @@ ssh_password = receive(client_socket)
 
 s, success = ssh_connect(ssh_hostname, ssh_user, ssh_password)
 if success:
-    prompt = "{}@{}>> ".format(ssh_user,ssh_hostname)
+    prompt = f"{ssh_user}@{ssh_hostname}>> "
     send(client_socket, prompt)
     while True:
         ssh_cmd = receive(client_socket)

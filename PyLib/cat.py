@@ -9,17 +9,15 @@ if os.path.exists(read_file):
         try:
             with open (read_file,'rb') as n:
                 send(client_socket,'SUCCESS')
-                line = n.read(1024)
-                while line:
+                while line := n.read(1024):
                     send(client_socket,line)
-                    line=n.read(1024)
                 send(client_socket, st_complete)
         except Exception as e:
-            err = '[!] {}'.format(str(e))
+            err = f'[!] {str(e)}'
             send(client_socket,err)
     else:
-        err = "ERROR: {}/: Is a directory\n".format(read_file)
+        err = f"ERROR: {read_file}/: Is a directory\n"
         send(client_socket, err)
 else:
-    err = "ERROR: {}: No such file or directory\n".format(read_file)
+    err = f"ERROR: {read_file}: No such file or directory\n"
     send(client_socket,err)

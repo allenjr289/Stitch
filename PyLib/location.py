@@ -11,7 +11,7 @@ except Exception as e:
     send(client_socket,resp)
 else:
     try:
-        url = 'http://freegeoip.net/json/{}'.format(ip)
+        url = f'http://freegeoip.net/json/{ip}'
         r = requests.get(url)
         js = r.json()
 
@@ -29,7 +29,7 @@ else:
         if hour > 12:
             hour = str(hour - 12)
             am_pm = "PM"
-        time = "{}{}{}".format(str(hour),strftime(":%M:%S "),am_pm)
+        time = f'{str(hour)}{strftime(":%M:%S ")}{am_pm}'
         date = strftime("%m/%d/%Y")
         resp =('    Public IP\t\t: {}\n\
                 \n    Country\t\t: {}, {}\

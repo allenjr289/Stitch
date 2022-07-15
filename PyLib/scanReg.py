@@ -9,8 +9,7 @@ scansum = ''
 def windefnd_scan():
     defender = reg_exists('SOFTWARE\\Microsoft\\Windows Defender')
     if not defender: defender = reg_exists('SOFTWARE\\Policies\\Microsoft\\Windows Defender')
-    if not defender: return False
-    else: return True
+    return bool(defender)
 
 def windefnd_running():
     key = False
@@ -21,28 +20,19 @@ def windefnd_running():
     if key:
         try:
             val=_winreg.QueryValueEx(key, "DisableAntiSpyware")
-            if val[0] == 1:
-                return False
-            else:
-                return True
+            return val[0] != 1
         except:
             return False
 
 def check_uac():
     uac_key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System')
     val=_winreg.QueryValueEx(uac_key, "EnableLUA")
-    if val[0] == 1:
-        return True
-    else:
-        return False
+    return val[0] == 1
 
 def check_rdp():
     rdp_key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, 'SYSTEM\\CurrentControlSet\\Control\\Terminal Server')
     val=_winreg.QueryValueEx(rdp_key, "fDenyTSConnections")
-    if val[0] == 0:
-        return True
-    else:
-        return False
+    return val[0] == 0
 
 def check_dep():
     dep_mode = run_command('wmic OS get DataExecutionPrevention_SupportPolicy')
@@ -57,16 +47,8 @@ def check_dep():
     else:
         return dep_mode
 
-if check_uac():
-    scansum += '   UAC: ON\n'
-else:
-    scansum += "   UAC: OFF\n"
-
-if check_rdp():
-    scansum += '   RDP: ON\n'
-else:
-    scansum += '   RDP: OFF\n'
-
+scansum += '   UAC: ON\n' if check_uac() else "   UAC: OFF\n"
+scansum += '   RDP: ON\n' if check_rdp() else '   RDP: OFF\n'
 if windefnd_scan():
     if windefnd_running():
         scansum += '   Windows Defender: ON\n'

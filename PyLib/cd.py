@@ -11,8 +11,8 @@ if os.path.exists(cd_dir):
         resp = "Directory change successful"
         send(client_socket, resp)
     else:
-        err = "[!] {}: Is not a directory\n".format(cd_dir)
+        err = f"[!] {cd_dir}: Is not a directory\n"
         send(client_socket, err)
 else:
-    err = "[!] {}: No such directory\n".format(cd_dir)
+    err = f"[!] {cd_dir}: No such directory\n"
     send(client_socket,err)

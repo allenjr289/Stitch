@@ -173,10 +173,8 @@ class HookManager(threading.Thread):
         if self.shiftablechar.match(self.lookup_keysym(self.local_dpy.keycode_to_keysym(event.detail, 0))): ## This is a character that can be typed.
             if self.ison["shift"] == False:
                 keysym = self.local_dpy.keycode_to_keysym(event.detail, 0)
-                return self.makekeyhookevent(keysym, event)
             else:
                 keysym = self.local_dpy.keycode_to_keysym(event.detail, 1)
-                return self.makekeyhookevent(keysym, event)
         else: ## Not a typable character.
             keysym = self.local_dpy.keycode_to_keysym(event.detail, 0)
             if self.isshift.match(matchto):
@@ -188,7 +186,8 @@ class HookManager(threading.Thread):
                 if self.ison["caps"] == True:
                     self.ison["shift"] = self.ison["shift"] - 1
                     self.ison["caps"] = False
-            return self.makekeyhookevent(keysym, event)
+
+        return self.makekeyhookevent(keysym, event)
 
     def keyreleaseevent(self, event):
         if self.shiftablechar.match(self.lookup_keysym(self.local_dpy.keycode_to_keysym(event.detail, 0))):
@@ -229,17 +228,18 @@ class HookManager(threading.Thread):
     # need the following because XK.keysym_to_string() only does printable chars
     # rather than being the correct inverse of XK.string_to_keysym()
     def lookup_keysym(self, keysym):
-        for name in dir(XK):
-            if name.startswith("XK_") and getattr(XK, name) == keysym:
-                return name.lstrip("XK_")
-        return "[%d]" % keysym
+        return next(
+            (
+                name.lstrip("XK_")
+                for name in dir(XK)
+                if name.startswith("XK_") and getattr(XK, name) == keysym
+            ),
+            "[%d]" % keysym,
+        )
 
     def asciivalue(self, keysym):
         asciinum = XK.string_to_keysym(self.lookup_keysym(keysym))
-        if asciinum < 256:
-            return asciinum
-        else:
-            return 0
+        return asciinum if asciinum < 256 else 0
 
     def makekeyhookevent(self, keysym, event):
         storewm = self.xwindowinfo()
@@ -253,21 +253,21 @@ class HookManager(threading.Thread):
         storewm = self.xwindowinfo()
         if event.detail == 1:
             MessageName = "mouse left "
-        elif event.detail == 3:
-            MessageName = "mouse right "
         elif event.detail == 2:
             MessageName = "mouse middle "
-        elif event.detail == 5:
-            MessageName = "mouse wheel down "
+        elif event.detail == 3:
+            MessageName = "mouse right "
         elif event.detail == 4:
             MessageName = "mouse wheel up "
+        elif event.detail == 5:
+            MessageName = "mouse wheel down "
         else:
-            MessageName = "mouse " + str(event.detail) + " "
+            MessageName = f"mouse {str(event.detail)} "
 
         if event.type == X.ButtonPress:
-            MessageName = MessageName + "down"
+            MessageName = f"{MessageName}down"
         elif event.type == X.ButtonRelease:
-            MessageName = MessageName + "up"
+            MessageName = f"{MessageName}up"
         return pyxhookmouseevent(storewm["handle"], storewm["name"], storewm["class"], (self.mouse_position_x, self.mouse_position_y), MessageName)
 
     def xwindowinfo(self):
@@ -279,7 +279,7 @@ class HookManager(threading.Thread):
         except:
             ## This is to keep things running smoothly. It almost never happens, but still...
             return {"name":None, "class":None, "handle":None}
-        if (wmname == None) and (wmclass == None):
+        if wmname is None and wmclass is None:
             try:
                 windowvar = windowvar.query_tree().parent
                 wmname = windowvar.get_wm_name()
@@ -288,7 +288,7 @@ class HookManager(threading.Thread):
             except:
                 ## This is to keep things running smoothly. It almost never happens, but still...
                 return {"name":None, "class":None, "handle":None}
-        if wmclass == None:
+        if wmclass is None:
             return {"name":wmname, "class":wmclass, "handle":wmhandle}
         else:
             return {"name":wmname, "class":wmclass[0], "handle":wmhandle}
@@ -318,7 +318,24 @@ class pyxhookkeyevent:
         self.MessageName = MessageName
 
     def __str__(self):
-        return "Window Handle: " + str(self.Window) + "\nWindow Name: " + str(self.WindowName) + "\nWindow's Process Name: " + str(self.WindowProcName) + "\nKey Pressed: " + str(self.Key) + "\nAscii Value: " + str(self.Ascii) + "\nKeyID: " + str(self.KeyID) + "\nScanCode: " + str(self.ScanCode) + "\nMessageName: " + str(self.MessageName) + "\n"
+        return (
+            f"Window Handle: {str(self.Window)}"
+            + "\nWindow Name: "
+            + str(self.WindowName)
+            + "\nWindow's Process Name: "
+            + str(self.WindowProcName)
+            + "\nKey Pressed: "
+            + str(self.Key)
+            + "\nAscii Value: "
+            + str(self.Ascii)
+            + "\nKeyID: "
+            + str(self.KeyID)
+            + "\nScanCode: "
+            + str(self.ScanCode)
+            + "\nMessageName: "
+            + str(self.MessageName)
+            + "\n"
+        )
 
 class pyxhookmouseevent:
     """This is the class that is returned with each key event.f
@@ -339,7 +356,18 @@ class pyxhookmouseevent:
         self.MessageName = MessageName
 
     def __str__(self):
-        return "Window Handle: " + str(self.Window) + "\nWindow Name: " + str(self.WindowName) + "\nWindow's Process Name: " + str(self.WindowProcName) + "\nPosition: " + str(self.Position) + "\nMessageName: " + str(self.MessageName) + "\n"
+        return (
+            f"Window Handle: {str(self.Window)}"
+            + "\nWindow Name: "
+            + str(self.WindowName)
+            + "\nWindow's Process Name: "
+            + str(self.WindowProcName)
+            + "\nPosition: "
+            + str(self.Position)
+            + "\nMessageName: "
+            + str(self.MessageName)
+            + "\n"
+        )
 
 #######################################################################
 #########################END CLASS DEF#################################

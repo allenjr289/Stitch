@@ -5,11 +5,7 @@ import os
 import sys
 import zipfile
 
-if win_client():
-    temp = 'C:\\Windows\\Temp\\'
-else:
-    temp = '/tmp/'
-
+temp = 'C:\\Windows\\Temp\\' if win_client() else '/tmp/'
 dwld_contents = ''
 l_filename = receive(client_socket)
 if l_filename != 'ERROR':

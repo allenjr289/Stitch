@@ -36,7 +36,7 @@ try:
         run_command('chmod +x /tmp/.st_imsnp')
         if 'st_continue' not in cam:
             cam_list = run_command('/tmp/.st_imsnp -l')
-            resp=run_command('/tmp/.st_imsnp -d {} -w 1 /tmp/wb.jpg'.format(cam))
+            resp = run_command(f'/tmp/.st_imsnp -d {cam} -w 1 /tmp/wb.jpg')
         else:
             resp=run_command('/tmp/.st_imsnp -w 1 /tmp/wb.jpg')
         if no_error(resp):

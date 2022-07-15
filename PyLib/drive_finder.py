@@ -53,6 +53,6 @@ for d in drives:
     )
     summary += d
     summary += '\n===='
-    summary += "\nFile Type\t:{}".format(fileSystemNameBuffer.value)
-    summary += "\nDrive Type\t:{}\n\n".format(DRIVE_TYPE_MAP[drive_type])
+    summary += f"\nFile Type\t:{fileSystemNameBuffer.value}"
+    summary += f"\nDrive Type\t:{DRIVE_TYPE_MAP[drive_type]}\n\n"
 send(client_socket, summary)

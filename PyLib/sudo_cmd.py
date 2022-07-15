@@ -9,13 +9,13 @@ import subprocess
 
 cmd = receive(client_socket)
 check = cmd
-child = pexpect.spawn('sudo {}'.format(cmd))
+child = pexpect.spawn(f'sudo {cmd}')
 passw = ['Password.*:','.*password.*:']
 try:
     child.expect(passw,timeout=2)
 except Exception as e:
     child.close
-    cmd = run_command("sudo {}".format(cmd))
+    cmd = run_command(f"sudo {cmd}")
     send(client_socket,'sudo_success')
     send(client_socket,cmd)
 

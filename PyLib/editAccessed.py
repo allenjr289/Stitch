@@ -10,5 +10,5 @@ if os.path.exists(editfile):
     cmd ='powershell "Get-ChildItem \'%s\' | %% { $_.LastAccessTime = \'%s\' }"' % (editfile,edittime)
     resp = run_command(cmd)
 else:
-    resp = "[!] {}: No such file or directory\n".format(editfile)
+    resp = f"[!] {editfile}: No such file or directory\n"
 send(client_socket,resp)

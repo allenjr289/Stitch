@@ -29,11 +29,8 @@ if win_client():
 else:
     user = run_command("whoami").strip().replace("\\","-")
     arch = run_command('uname -m')
-    if 'x86_64' in arch:
-        arch = '64-bit'
-    else:
-        arch = '32-bit'
-time = "{}{}{}".format(str(hour),strftime(":%M:%S "),am_pm)
+    arch = '64-bit' if 'x86_64' in arch else '32-bit'
+time = f'{str(hour)}{strftime(":%M:%S ")}{am_pm}'
 date = strftime("%m/%d/%Y")
 stinfo = (  "   OS{8:25}: {0}"
             "\n   Architecture{8:15}: {1}"

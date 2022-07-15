@@ -43,10 +43,7 @@ def validateIP(ipaddress):
     parts = ipaddress.split(".")
     if len(parts) != 4: return False
     if ipaddress[-1] == '.': return False
-    for item in parts:
-        if not 0 <= int(item) <= 255:
-            return False
-    return True
+    return all(0 <= int(item) <= 255 for item in parts)
 
 def validateHostname(hostname):
     if len(hostname) > 255 or len(hostname) < 5: return False
@@ -61,19 +58,19 @@ entry = "\n{0:20}{1}\n".format(ipaddress, hostname)
 entry_update = "{0:20}{1}\n".format(ipaddress, hostname)
 
 if not validateIP(ipaddress):
-    resp = '[!] "{}" is not a valid IP address.\n'.format(ipaddress)
+    resp = f'[!] "{ipaddress}" is not a valid IP address.\n'
 elif not validateHostname(hostname):
-    resp = '[!] "{}" is not a valid hostname.\n'.format(hostname)
+    resp = f'[!] "{hostname}" is not a valid hostname.\n'
 elif host_exists(hostname,hosts_file):
     success, err = update_host(hostname,entry_update,hosts_file)
     if success and not err:
-        resp = '[+] Successfully updated "{}" to {}\n'.format(hostname,ipaddress)
+        resp = f'[+] Successfully updated "{hostname}" to {ipaddress}\n'
     else:
-        resp = '[!] ERROR: {}\n'.format(err)
+        resp = f'[!] ERROR: {err}\n'
 else:
     success, err = add_host(entry,hosts_file)
     if success and not err:
-        resp = '[+] Successfully added "{}" to "{}"\n'.format(hostname,hosts_file)
+        resp = f'[+] Successfully added "{hostname}" to "{hosts_file}"\n'
     else:
-        resp = '[!] ERROR: {}\n'.format(err)
+        resp = f'[!] ERROR: {err}\n'
 send(client_socket,resp)

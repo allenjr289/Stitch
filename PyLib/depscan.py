@@ -7,7 +7,13 @@ import subprocess
 def check_dep():
     dep = subprocess.Popen('wmic OS get DataExecutionPrevention_SupportPolicy',shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     dep_mode, errors = dep.communicate()
-    if not errors and dep_mode:
+    if errors:
+        return errors
+
+    elif not dep_mode:
+        return errors
+
+    else:
         if "0" in dep_mode:
             return "DEP is off for the whole system."
         elif "1" in dep_mode:
@@ -16,7 +22,5 @@ def check_dep():
             return "DEP is limited to Windows system binaries."
         elif "3" in dep_mode:
             return "DEP is on for all programs and services."
-    else:
-        return errors
 
 print check_dep()
